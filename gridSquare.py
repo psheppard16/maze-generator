@@ -1,41 +1,37 @@
 __author__ = 'Preston Sheppard'
 import random
 class GridSquare:
-    xSize = 16
-    ySize = 9
-    gridSquares = [[None for i in range(9)] for j in range(16)]
     def __init__(self, xPos, yPos):
         self.xPos = xPos
         self.yPos = yPos
         self.pathed = False
         self.walls = [True, True, True, True]
         self.directions = [0, 1, 2, 3]
-        GridSquare.gridSquares[xPos][yPos] = self
         
-    def open(self, direction):
+    def open(self, direction, gridSquares):
         ###0###
         #3###1#
         ###2###
         self.walls[direction] = False
         self.pathed = True
         try:
-            if direction == 0 and getSquare(self.xPos, self.yPos + 1):
-                square = getSquare(self.xPos, self.yPos + 1)
+            if direction == 0 and getSquare(self.xPos, self.yPos + 1, gridSquares):
+                square = getSquare(self.xPos, self.yPos + 1, gridSquares)
                 square.walls[2] = False
                 square.pathed = True
                 square.directions.remove(2)
-            elif direction == 1 and getSquare(self.xPos + 1, self.yPos):
-                square = getSquare(self.xPos + 1, self.yPos)
+            elif direction == 1 and getSquare(self.xPos + 1, self.yPos, gridSquares):
+                square = getSquare(self.xPos + 1, self.yPos, gridSquares)
                 square.walls[3] = False
                 square.pathed = True
                 square.directions.remove(3)
-            elif direction == 2 and getSquare(self.xPos, self.yPos - 1):
-                square = getSquare(self.xPos, self.yPos - 1)
+            elif direction == 2 and getSquare(self.xPos, self.yPos - 1, gridSquares):
+                square = getSquare(self.xPos, self.yPos - 1, gridSquares)
                 square.walls[0] = False
                 square.pathed = True
                 square.directions.remove(0)
-            elif direction == 3 and getSquare(self.xPos - 1, self.yPos):
-                square = getSquare(self.xPos - 1, self.yPos)
+            elif direction == 3 and getSquare(self.xPos - 1, self.yPos, gridSquares):
+                square = getSquare(self.xPos - 1, self.yPos, gridSquares)
                 square.walls[1] = False
                 square.pathed = True
                 square.directions.remove(1)
@@ -56,12 +52,12 @@ class GridSquare:
         else:
             return False
 
-def open(xPos, yPos, direction):
-    GridSquare.gridSquares[xPos][yPos].open(direction)
+def open(xPos, yPos, direction, gridSquares):
+    gridSquares[xPos][yPos].open(direction, gridSquares)
 
-def getWalls(wallSize):
+def getWalls(wallSize, gridSquares):
     wallList = []
-    for squareList in GridSquare.gridSquares:
+    for squareList in gridSquares:
         for square in squareList:
             if square.walls[0]:
                 wallList.append(((square.xPos * wallSize, (square.yPos + 1) * wallSize), ((square.xPos + 1) * wallSize, (square.yPos + 1) * wallSize)))
@@ -87,27 +83,27 @@ def getWalls(wallSize):
 
     return wallList
 
-def squaresPathed():
-    for squareList in GridSquare.gridSquares:
+def squaresPathed(gridSquares):
+    for squareList in gridSquares:
         for square in squareList:
             if not square.pathed:
                 return False
     return True
 
-def getSquare(xPos, yPos):
+def getSquare(xPos, yPos, gridSquares):
     if xPos < 0:
         return None
     if yPos < 0:
         return None
-    if xPos >= GridSquare.xSize:
+    if xPos >= len(gridSquares[0]):
         return None
-    if yPos >= GridSquare.ySize:
+    if yPos >= len(gridSquares):
         return None
-    return GridSquare.gridSquares[xPos][yPos]
+    return gridSquares[xPos][yPos]
 
-def getPathedSquare():
+def getPathedSquare(gridSquares):
     candidates = []
-    for squareList in GridSquare.gridSquares:
+    for squareList in gridSquares:
         for square in squareList:
             if square.pathed and square.hasDirection():
                 candidates.append(square)
@@ -116,3 +112,41 @@ def getPathedSquare():
     else:
         return None
 
+def generateSquareMaze(mazeWidth, mazeHeight, wallSize):
+    start = (0, 0)
+
+    gridSquares = [[None for i in range(mazeWidth)] for j in range(mazeHeight)]
+    for i in range(mazeWidth): #generates blank grid
+        for j in range(mazeHeight):
+            gridSquares[i][j] = GridSquare(i, j)
+
+    focus = start
+    while not squaresPathed(gridSquares):
+        square = getSquare(focus[0], focus[1], gridSquares)
+        if square.hasDirection():
+            direction = square.getDirection()
+        else:
+            square = getPathedSquare(gridSquares)
+            if not square:
+                break
+            focus = (square.xPos, square.yPos)
+            direction = square.getDirection()
+
+        if direction == 0:
+            if getSquare(focus[0], focus[1] + 1, gridSquares) and not getSquare(focus[0], focus[1] + 1, gridSquares).pathed:
+                open(focus[0], focus[1], direction, gridSquares)
+                focus = (focus[0], focus[1] + 1)
+        elif direction == 1:
+            if getSquare(focus[0] + 1, focus[1], gridSquares) and not getSquare(focus[0] + 1, focus[1], gridSquares).pathed:
+                open(focus[0], focus[1], direction, gridSquares)
+                focus = (focus[0] + 1, focus[1], gridSquares)
+        elif direction == 2:
+            if getSquare(focus[0], focus[1] - 1, gridSquares) and not getSquare(focus[0], focus[1] - 1, gridSquares).pathed:
+                open(focus[0], focus[1], direction, gridSquares)
+                focus = (focus[0], focus[1] - 1, gridSquares)
+        elif direction == 3:
+            if getSquare(focus[0] - 1, focus[1], gridSquares) and not getSquare(focus[0] - 1, focus[1], gridSquares).pathed:
+                open(focus[0], focus[1], direction, gridSquares)
+                focus = (focus[0] - 1, focus[1], gridSquares)
+
+    return getWalls(wallSize, gridSquares)
