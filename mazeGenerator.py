@@ -1,5 +1,5 @@
-from Game.Maze.gridSquare import GridSquare
-import Game.Maze.gridSquare as gs
+from gridSquare import GridSquare
+import gridSquare as gs
 
 def generateSquareMaze(mazeWidth, mazeHeight, wallSize):
     start = (0, 0)

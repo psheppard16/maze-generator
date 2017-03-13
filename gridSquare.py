@@ -71,6 +71,20 @@ def getWalls(wallSize):
                 wallList.append(((square.xPos * wallSize, square.yPos * wallSize), ((square.xPos + 1) * wallSize, square.yPos * wallSize)))
             if square.walls[3]:
                 wallList.append(((square.xPos * wallSize, (square.yPos + 1) * wallSize), (square.xPos * wallSize, square.yPos * wallSize)))
+
+    removed = True
+    while removed:
+        removed = False
+        for wall1 in wallList:  # remove duplicate walls
+            duplicate = False
+            for wall2 in wallList:
+                if wall1 == wall2:
+                    if duplicate:
+                        wallList.remove(wall2)
+                        removed = True
+                    else:
+                        duplicate = True
+
     return wallList
 
 def squaresPathed():
