@@ -55,18 +55,18 @@ class GridSquare:
 def open(xPos, yPos, direction, gridSquares):
     gridSquares[xPos][yPos].open(direction, gridSquares)
 
-def getWalls(wallSize, gridSquares):
+def getWalls(wallSize, gridSquares, location):
     wallList = []
     for squareList in gridSquares:
         for square in squareList:
             if square.walls[0]:
-                wallList.append(((square.xPos * wallSize, (square.yPos + 1) * wallSize), ((square.xPos + 1) * wallSize, (square.yPos + 1) * wallSize)))
+                wallList.append(((square.xPos * wallSize + location[0], (square.yPos + 1) * wallSize + location[1]), ((square.xPos + 1) * wallSize + location[0], (square.yPos + 1) * wallSize + location[1])))
             if square.walls[1]:
-                wallList.append((((square.xPos + 1) * wallSize, (square.yPos + 1) * wallSize), ((square.xPos + 1) * wallSize, square.yPos * wallSize)))
+                wallList.append((((square.xPos + 1) * wallSize + location[0], (square.yPos + 1) * wallSize + location[1]), ((square.xPos + 1) * wallSize + location[0], square.yPos * wallSize + location[1])))
             if square.walls[2]:
-                wallList.append(((square.xPos * wallSize, square.yPos * wallSize), ((square.xPos + 1) * wallSize, square.yPos * wallSize)))
+                wallList.append(((square.xPos * wallSize + location[0], square.yPos * wallSize + location[1]), ((square.xPos + 1) * wallSize + location[0], square.yPos * wallSize + location[1])))
             if square.walls[3]:
-                wallList.append(((square.xPos * wallSize, (square.yPos + 1) * wallSize), (square.xPos * wallSize, square.yPos * wallSize)))
+                wallList.append(((square.xPos * wallSize + location[0], (square.yPos + 1) * wallSize + location[1]), (square.xPos * wallSize + location[0], square.yPos * wallSize + location[1])))
 
     removed = True
     while removed:
@@ -95,9 +95,9 @@ def getSquare(xPos, yPos, gridSquares):
         return None
     if yPos < 0:
         return None
-    if xPos >= len(gridSquares[0]):
+    if xPos >= len(gridSquares):
         return None
-    if yPos >= len(gridSquares):
+    if yPos >= len(gridSquares[0]):
         return None
     return gridSquares[xPos][yPos]
 
@@ -112,10 +112,10 @@ def getPathedSquare(gridSquares):
     else:
         return None
 
-def generateSquareMaze(mazeWidth, mazeHeight, wallSize):
+def generateSquareMaze(mazeWidth, mazeHeight, wallSize, location=(0,0)):
     start = (0, 0)
 
-    gridSquares = [[None for i in range(mazeWidth)] for j in range(mazeHeight)]
+    gridSquares = [[None for i in range(mazeHeight)] for j in range(mazeWidth)]
     for i in range(mazeWidth): #generates blank grid
         for j in range(mazeHeight):
             gridSquares[i][j] = GridSquare(i, j)
@@ -149,4 +149,4 @@ def generateSquareMaze(mazeWidth, mazeHeight, wallSize):
                 open(focus[0], focus[1], direction, gridSquares)
                 focus = (focus[0] - 1, focus[1], gridSquares)
 
-    return getWalls(wallSize, gridSquares)
+    return getWalls(wallSize, gridSquares, location)
